@@ -67,6 +67,10 @@ public class CamCrane : MonoBehaviour {
 	uGUI_Accel accelGui;
 
 	Text Txt_AccelValue;
+	Text Txt_CompassMagValue;
+	Text Txt_CompassTrueValue;
+	Text Txt_CompassAccuracy;
+	Text Txt_CompassRot;
 
 	/*!	Initial procedure.
 	 * 	Initial class for degree. 
@@ -77,6 +81,15 @@ public class CamCrane : MonoBehaviour {
 
 		GameObject go = GameObject.Find("Canvas/Text_AccelValue");
 		Txt_AccelValue = go.GetComponent<Text>();
+		go = GameObject.Find("Canvas/Text_CompassMagHeadValue");
+		Txt_CompassMagValue = go.GetComponent<Text>();
+		go = GameObject.Find("Canvas/Text_CompassTrueHeadValue");
+		Txt_CompassTrueValue = go.GetComponent<Text>();
+		go = GameObject.Find("Canvas/Text_CompassAccuracyValue");
+		Txt_CompassAccuracy = go.GetComponent<Text>();
+
+		go = GameObject.Find("Canvas/Text_CompassRot");
+		Txt_CompassRot = go.GetComponent<Text>();
 
 		accelGui = GetComponent<uGUI_Accel>();
 
@@ -273,8 +286,27 @@ public class CamCrane : MonoBehaviour {
    	 * 	@attention		None 
    	 */	
 	void AccelerateOperation(){
+
 		Vector3 acceleration = Input.acceleration;
-		Txt_AccelValue.text = acceleration.ToString("F4");
+		float compassMag = Input.compass.magneticHeading;
+		float compassTrue = Input.compass.trueHeading;
+		float compassAccuracy = Input.compass.headingAccuracy;
+
+		Txt_AccelValue.text = acceleration.ToString("F5");
+		Txt_CompassMagValue.text = compassMag.ToString("F5");
+		Txt_CompassTrueValue.text = compassTrue.ToString("F5");
+		Txt_CompassAccuracy.text = compassAccuracy.ToString("F5");
+
+		Quaternion compasRot = Quaternion.Euler(0, -Input.compass.trueHeading, 0);
+		Vector3 compassDeg = compasRot.eulerAngles;
+		//Txt_CompassRot.text = compasRot.ToString("F5")+"/"+compassDeg.ToString("F5");
+		Txt_CompassRot.text = compasRot.ToString("F5")+"/"+Input.compass.rawVector.ToString("F5");
+
+
+
+		//transform.rotation = Quaternion.Euler(0, -Input.compass.trueHeading, 0);
+
+
 		if(!EnableAccelSensor){
 			acceleration = Vector3.zero;
 			Detected_acceleration_DegX = Detected_acceleration_DegY = 0f;
@@ -341,7 +373,6 @@ public class CamCrane : MonoBehaviour {
 	//-----
 	void Awake(){
 		Init();
-		
 	}
 	void Start () {
 
@@ -349,6 +380,8 @@ public class CamCrane : MonoBehaviour {
 		Quaternion b = new Quaternion(0f, 0.00170f, 0f, 1.0f);
 		float t = Quaternion.Angle(a , b);
 		//Debug.Log("t="+t);
+		Input.compass.enabled = true; //Enable compass
+		Input.location.Start();
 	}
 	
 	/*!	Turn right camera.
