@@ -71,6 +71,7 @@ public class CamCrane : MonoBehaviour {
 	Text Txt_CompassTrueValue;
 	Text Txt_CompassAccuracy;
 	Text Txt_CompassRot;
+	Text Txt_GyroDeg;
 
 	/*!	Initial procedure.
 	 * 	Initial class for degree. 
@@ -90,6 +91,9 @@ public class CamCrane : MonoBehaviour {
 
 		go = GameObject.Find("Canvas/Text_CompassRot");
 		Txt_CompassRot = go.GetComponent<Text>();
+
+		go = GameObject.Find("Canvas/Text_GyroDeg");
+		Txt_GyroDeg = go.GetComponent<Text>();
 
 		accelGui = GetComponent<uGUI_Accel>();
 
@@ -302,7 +306,12 @@ public class CamCrane : MonoBehaviour {
 		//Txt_CompassRot.text = compasRot.ToString("F5")+"/"+compassDeg.ToString("F5");
 		Txt_CompassRot.text = compasRot.ToString("F5")+"/"+Input.compass.rawVector.ToString("F5");
 
-
+		Input.gyro.enabled = true;
+		if(Input.gyro.enabled){
+			Quaternion gyroRot = Input.gyro.attitude;
+			Quaternion gyro = Quaternion.Euler(90, 0, 0) * (new Quaternion(-gyroRot.x,-gyroRot.y, gyroRot.z, gyroRot.w));
+			Txt_GyroDeg.text = gyroRot.ToString("F5");
+		}
 
 		//transform.rotation = Quaternion.Euler(0, -Input.compass.trueHeading, 0);
 
