@@ -28,23 +28,35 @@ public class ValueRange : MonoBehaviour {
 	void Update () {
 	}
 
-	float resolution = 2f;
-	float limitPlus = 40f;
-	float limitMinus = -40f;
-	float absAdjustValue = 0f;
-	
-	float resultValue = 0f;
+	float resolution = 2f;		//!< Additional/Subtraction value for degree.
+	float limitPlus = 40f;		//!< Limit degree value for positive degree.
+	float limitMinus = -40f;	//!< Limit degree value for negative degree.
+
+	float resultValue = 0f;		//!< Result value. 
 	public float ResultValue{
 		get{
 			resultValue = evaluateLimit(rangeValue + absAdjustValue);
 			return(resultValue);
 		}
 	}
-	float absAdjustOffsetValue = 0f;
+	float absAdjustOffsetValue = 0f; //!< Abusolute offset degree.(that effective by limit range too)
+ /*!
+ *  @brief		Accessor for absAdjustOffsetValue
+ * 	@attention	None
+ * 	@note		Usable any sensor that dection absolute value, setup default heading vector.
+ * 	@author		Maruton.
+ */
 	public float AbsAdjustOffsetValue{
 		set{absAdjustOffsetValue = value;}
 		get{return(absAdjustOffsetValue);}
 	}
+	float absAdjustValue = 0f;	//!< Abusolute offset degree.(that effective by limit range too)
+	/*!
+ *  @brief		Accessor for absAdjustValue
+ * 	@attention	None
+ * 	@note		Usable any sensor that dection absolute value, moving control to heading vector.
+ * 	@author		Maruton.
+ */
 	public float AbsAdjustValue{
 		set{absAdjustValue = value - AbsAdjustOffsetValue;}
 		get{return(absAdjustValue);}
@@ -78,6 +90,13 @@ public class ValueRange : MonoBehaviour {
 		}
 		return(a);
 	}
+
+ /*!
+ * 	@brief		Adjust range to value of degree -180 to 180 <br>
+ * 	@attention	None
+ * 	@note		None
+ * 	@author		Maruton.
+ */
 	float adj180(float a){
 		if(a>180f){
 			while(a>180f) a-= 180f;

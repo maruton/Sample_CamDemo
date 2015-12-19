@@ -72,6 +72,10 @@ public class CamCrane : MonoBehaviour {
 	Text Txt_CompassAccuracy;
 	Text Txt_CompassRot;
 	Text Txt_GyroDeg;
+	Text Txt_Comment;
+
+	Text Txt_Status;
+	string Message_Status = "";
 
 	/*!	Initial procedure.
 	 * 	Initial class for degree. 
@@ -94,6 +98,13 @@ public class CamCrane : MonoBehaviour {
 
 		go = GameObject.Find("Canvas/Text_GyroDeg");
 		Txt_GyroDeg = go.GetComponent<Text>();
+
+		go = GameObject.Find("Canvas/Text_CommentValue");
+		Txt_Comment = go.GetComponent<Text>();
+
+		go = GameObject.Find("Canvas/Text_Status");
+		Txt_Status = go.GetComponent<Text>();
+
 
 		accelGui = GetComponent<uGUI_Accel>();
 
@@ -286,36 +297,20 @@ public class CamCrane : MonoBehaviour {
 	public bool EnableAccelSensor_DetectDiffrencial = true;//!< Enable accel sensor motion detect.
 	/*!	Accelerate operation.
 	 *	Accelerate operation.
-   	 * 	@note		 	None
+   	 * 	@note		 	水平上向き 	y = 0
+   	 * 					前方上45度	y = -0.5 ※後方上45度と同じ
+   	 * 					上垂直		y = -1.0
+   	 * 					後方上45度	y = -0.5 ※前方上45度と同じ
+   	 * 					水平下向き	y = 1.0
+   	 * 
    	 * 	@attention		None 
    	 */	
 	void AccelerateOperation(){
 
-		Vector3 acceleration = Input.acceleration;
-		float compassMag = Input.compass.magneticHeading;
-		float compassTrue = Input.compass.trueHeading;
-		float compassAccuracy = Input.compass.headingAccuracy;
-
-		Txt_AccelValue.text = acceleration.ToString("F5");
-		Txt_CompassMagValue.text = compassMag.ToString("F5");
-		Txt_CompassTrueValue.text = compassTrue.ToString("F5");
-		Txt_CompassAccuracy.text = compassAccuracy.ToString("F5");
-
-		Quaternion compasRot = Quaternion.Euler(0, -Input.compass.trueHeading, 0);
-		Vector3 compassDeg = compasRot.eulerAngles;
-		//Txt_CompassRot.text = compasRot.ToString("F5")+"/"+compassDeg.ToString("F5");
-		Txt_CompassRot.text = compasRot.ToString("F5")+"/"+Input.compass.rawVector.ToString("F5");
-
-		Input.gyro.enabled = true;
-		if(Input.gyro.enabled){
-			Quaternion gyroRot = Input.gyro.attitude;
-			Quaternion gyro = Quaternion.Euler(90, 0, 0) * (new Quaternion(-gyroRot.x,-gyroRot.y, gyroRot.z, gyroRot.w));
-			Txt_GyroDeg.text = gyroRot.ToString("F5");
-		}
-
 		//transform.rotation = Quaternion.Euler(0, -Input.compass.trueHeading, 0);
 
 
+		Vector3 acceleration = Input.acceleration;
 		if(!EnableAccelSensor){
 			acceleration = Vector3.zero;
 			Detected_acceleration_DegX = Detected_acceleration_DegY = 0f;
@@ -353,7 +348,29 @@ public class CamCrane : MonoBehaviour {
 			Detected_acceleration_Y = true;
 		}
 	}
-
+	void test(){
+		Vector3 acceleration = Input.acceleration;
+		float compassMag = Input.compass.magneticHeading;
+		float compassTrue = Input.compass.trueHeading;
+		float compassAccuracy = Input.compass.headingAccuracy;
+		
+		Txt_AccelValue.text = acceleration.ToString("F5");
+		Txt_CompassMagValue.text = compassMag.ToString("F5");
+		Txt_CompassTrueValue.text = compassTrue.ToString("F5");
+		Txt_CompassAccuracy.text = compassAccuracy.ToString("F5");
+		
+		Quaternion compasRot = Quaternion.Euler(0, -Input.compass.trueHeading, 0);
+		Vector3 compassDeg = compasRot.eulerAngles;
+		//Txt_CompassRot.text = compasRot.ToString("F5")+"/"+compassDeg.ToString("F5");
+		Txt_CompassRot.text = Input.compass.rawVector.ToString("F5");
+		
+		Input.gyro.enabled = true;
+		if(Input.gyro.enabled){
+			Quaternion gyroRot = Input.gyro.attitude;
+			Quaternion gyro = Quaternion.Euler(90, 0, 0) * (new Quaternion(-gyroRot.x,-gyroRot.y, gyroRot.z, gyroRot.w));
+			Txt_GyroDeg.text = gyroRot.ToString("F5");
+		}
+	}
 	void Update () {
 		KeyOperation();
 		AccelerateOperation();
@@ -361,6 +378,20 @@ public class CamCrane : MonoBehaviour {
 		update_Turn();
 		update_Trim();
 		update_Zoom();
+
+
+		//Indicate status
+		string statusMessage = "";
+		statusMessage = systemInfo+"\n";
+
+		if(Input.gyro.enabled) statusMessage += "Gyro[On]";
+		if(!Input.gyro.enabled) statusMessage += "Gyro[Off]";
+		Txt_Status.text = statusMessage;
+
+
+		test();
+
+
 
 		//「戻るキー」でアプリ終了 (Android)。ESC でアプリ終了(Win) 
 		#if UNITY_ANDROID
@@ -383,14 +414,52 @@ public class CamCrane : MonoBehaviour {
 	void Awake(){
 		Init();
 	}
+	string 	systemInfo = "";
+	void Init_SysInfo(){
+		systemInfo += "\nDeviceModel: "+SystemInfo.deviceModel;
+		systemInfo += "\nDeviceName: "+SystemInfo.deviceName;
+		systemInfo += "\nDeviceType: "+SystemInfo.deviceType;
+		systemInfo += "\ngraphicsDeviceID: "+SystemInfo.graphicsDeviceID;
+		systemInfo += "\ngraphicsDeviceName: "+SystemInfo.graphicsDeviceName;
+		systemInfo += "\ngraphicsDeviceType: "+SystemInfo.graphicsDeviceType;
+		systemInfo += "\ngraphicsDeviceVendor: "+SystemInfo.graphicsDeviceVendor;
+		systemInfo += "\ngraphicsDeviceVendorID: "+SystemInfo.graphicsDeviceVendorID;
+		systemInfo += "\ngraphicsDeviceVersion: "+SystemInfo.graphicsDeviceVersion;
+		systemInfo += "\ngraphicsMemorySize: "+SystemInfo.graphicsMemorySize;
+		systemInfo += "\ngraphicsMultiThreaded: "+SystemInfo.graphicsMultiThreaded;
+		systemInfo += "\ngraphicsShaderLevel: "+SystemInfo.graphicsShaderLevel;
+		systemInfo += "\nmaxTextureSize: "+SystemInfo.maxTextureSize;
+		systemInfo += "\nprocessorCount: "+SystemInfo.processorCount;
+		systemInfo += "\nprocessorType: "+SystemInfo.processorType;
+		systemInfo += "\nsupportedRenderTargetCount: "+SystemInfo.supportedRenderTargetCount;
+		systemInfo += "\nsupports3DTextures: "+SystemInfo.supports3DTextures;
+		systemInfo += "\nsupportsComputeShaders: "+SystemInfo.supportsComputeShaders;
+		systemInfo += "\nsupportsImageEffects: "+SystemInfo.supportsImageEffects;
+		//systemInfo += "\nSupportsRenderTextureFormat: "+(SystemInfo.SupportsRenderTextureFormat==true)?"true":"false";
+		systemInfo += "\nsupportsRenderTextures: "+SystemInfo.supportsRenderTextures;
+		systemInfo += "\nsupportsShadows: "+SystemInfo.supportsShadows;
+		systemInfo += "\nsupportsSparseTextures: "+SystemInfo.supportsSparseTextures;
+		systemInfo += "\nsupportsStencil: "+SystemInfo.supportsStencil;
+		//systemInfo += "\nSupportsTextureFormat: "+SystemInfo.SupportsTextureFormat;
+		systemInfo += "\nsystemMemorySize: "+SystemInfo.systemMemorySize;
+		systemInfo += "\nsupportsAccelerometer: "+SystemInfo.supportsAccelerometer;
+		systemInfo += "\nsupportsGyroscope: "+SystemInfo.supportsGyroscope;
+		systemInfo += "\nsupportsVibration: "+SystemInfo.supportsVibration;
+	}
 	void Start () {
+		Init_SysInfo();
 
 		Quaternion a = new Quaternion(0f, 0.20773f, 0f, 0.97819f);
 		Quaternion b = new Quaternion(0f, 0.00170f, 0f, 1.0f);
 		float t = Quaternion.Angle(a , b);
+
 		//Debug.Log("t="+t);
 		Input.compass.enabled = true; //Enable compass
 		Input.location.Start();
+
+		if(SystemInfo.supportsGyroscope){
+			Input.gyro.enabled = true;
+		}
 	}
 	
 	/*!	Turn right camera.

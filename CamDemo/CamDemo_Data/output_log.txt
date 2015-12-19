@@ -1,3 +1,10 @@
+Mono path[0] = 'G:/usr/Unity5/!_GitHub/Sample_CamDemo/CamDemo/CamDemo_Data/Managed'
+Mono path[1] = 'G:/usr/Unity5/!_GitHub/Sample_CamDemo/CamDemo/CamDemo_Data/Mono'
+Mono config path = 'G:/usr/Unity5/!_GitHub/Sample_CamDemo/CamDemo/CamDemo_Data/Mono/etc'
+PlayerConnection initialized from G:/usr/Unity5/!_GitHub/Sample_CamDemo/CamDemo/CamDemo_Data (debug = 0)
+PlayerConnection initialized network socket : 0.0.0.0 55357
+Multi-casting "[IP] 192.168.2.157 [Port] 55357 [Flags] 2 [Guid] 357934278 [EditorId] 2714443789 [Version] 1048832 [Id] WindowsPlayer(atx7) [Debug] 0" to [225.0.0.222:54997]...
+PlayerConnection already initialized - listening to [192.168.2.157:55357]
 Initialize engine version: 5.1.1f1 (2046fc06d4d8)
 GfxDevice: creating device client; threaded=1
 Direct3D:
@@ -16,7 +23,7 @@ Platform assembly: G:\usr\Unity5\!_GitHub\Sample_CamDemo\CamDemo\CamDemo_Data\Ma
 Loading G:\usr\Unity5\!_GitHub\Sample_CamDemo\CamDemo\CamDemo_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
 Platform assembly: G:\usr\Unity5\!_GitHub\Sample_CamDemo\CamDemo\CamDemo_Data\Managed\UnityEngine.Analytics.dll (this message is harmless)
 Loading G:\usr\Unity5\!_GitHub\Sample_CamDemo\CamDemo\CamDemo_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
-- Completed reload, in  0.099 seconds
+- Completed reload, in  0.087 seconds
 desktop: 1920x1080 60Hz; virtual: 2944x1080 at -1024,0
 <RI> Initializing input.
 <RI> Input initialized.
