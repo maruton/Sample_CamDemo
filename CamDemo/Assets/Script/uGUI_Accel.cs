@@ -34,47 +34,74 @@ class uGUI_Accel: MonoBehaviour {
 		trigger_button.triggers.Add (entry);
 		*/
 	}
+
+	CamCrane cCamCrane;
 	void Start () {
-	
+		cCamCrane = gameObject.GetComponent<CamCrane>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
 	
 	}
+	void SetMode_Quick(){
+		cCamCrane.JittterReductionA = true;
+		cCamCrane.JittterReductionB = false;
+	}
+	void SetMode_Smooth(){
+		cCamCrane.JittterReductionA = false;
+		cCamCrane.JittterReductionB = true;
+	}
+	public void Button_Smooth60(){
+		SetMode_Smooth();
+		cCamCrane.SmoothFrame = 1f;
+	}
+	public void Button_Smooth30(){
+		SetMode_Smooth();
+		cCamCrane.SmoothFrame = 2f;
+	}
 
 	public float ParamV = 1.0f;
 	public float ParamH = 1.0f;
 
 	public void Button_v2(){
+		SetMode_Quick();
 		ParamV = 0.2f;
-		Debug.Log ("Button_v2");
 	}
 	public void Button_v4(){
+		SetMode_Quick();
 		ParamV = 0.4f;
 	}
 	public void Button_v6(){
+		SetMode_Quick();
 		ParamV = 0.6f;
 	}
 	public void Button_v8(){
+		SetMode_Quick();
 		ParamV = 0.8f;
 	}
 	public void Button_v10(){
+		SetMode_Quick();
 		ParamV = 1.0f;
 	}
 	public void Button_h2(){
+		SetMode_Quick();
 		ParamH = 0.2f;
 	}
 	public void Button_h4(){
+		SetMode_Quick();
 		ParamH = 0.4f;
 	}
 	public void Button_h6(){
+		SetMode_Quick();
 		ParamH = 0.6f;
 	}
 	public void Button_h8(){
+		SetMode_Quick();
 		ParamH = 0.8f;
 	}
 	public void Button_h10(){
+		SetMode_Quick();
 		ParamH = 1.0f;
 	}
 }

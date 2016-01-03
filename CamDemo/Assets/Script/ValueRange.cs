@@ -35,10 +35,22 @@ public class ValueRange : MonoBehaviour {
 	float resultValue = 0f;		//!< Result value. 
 	public float ResultValue{
 		get{
-			resultValue = evaluateLimit(rangeValue + absAdjustValue);
+			resultValue = adj180(evaluateLimit(rangeValue + absAdjustValue)+offsetValue);
 			return(resultValue);
 		}
 	}
+	float offsetValue = 0f; //!< offset degree.
+	/*!
+ *  @brief		Accessor for offsetValue
+ * 	@attention	None
+ * 	@note		Offset value.
+ * 	@author		Maruton.
+ */
+	public float OffsetValue{
+		set{offsetValue = value;}
+		get{return(offsetValue);}
+	}
+
 	float absAdjustOffsetValue = 0f; //!< Abusolute offset degree.(that effective by limit range too)
  /*!
  *  @brief		Accessor for absAdjustOffsetValue
@@ -97,7 +109,19 @@ public class ValueRange : MonoBehaviour {
  * 	@note		None
  * 	@author		Maruton.
  */
-	float adj180(float a){
+	public float adj180(float a){
+		while(a>360f) a-= 360f;
+		while(a<-360f) a+= 360f;
+		if(a>180f){
+			a = (a-180f) - 180f;
+		}
+		else if(a<-180f){
+			a = (a+180f) + 180f;
+		}
+		return(a);
+	}
+	/*
+	public float adj180(float a){
 		if(a>180f){
 			while(a>180f) a-= 180f;
 			a = -180f + a;
@@ -108,4 +132,5 @@ public class ValueRange : MonoBehaviour {
 		}
 		return(a);
 	}
+	*/
 }
