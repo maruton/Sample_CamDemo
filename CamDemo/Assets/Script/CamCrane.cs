@@ -333,7 +333,7 @@ public class CamCrane : MonoBehaviour {
 	void AccelerateOperation(){
 		//transform.rotation = Quaternion.Euler(0, -Input.compass.trueHeading, 0);
 		Vector3 acceleration = Input.acceleration;
-		magneticHeading = turn.adj180(Input.compass.magneticHeading);
+		magneticHeading = Input.compass.magneticHeading;
 
 		if(!EnableAccelSensor){
 			acceleration = Vector3.zero;
@@ -348,13 +348,7 @@ public class CamCrane : MonoBehaviour {
 
 			float noiseReduction_compass_Response = SmoothFrame/60f;
 
-			//Round lerp
-			Vector3 a = new Vector3(magneticHeading, 0f, 0f);
-			Vector3 b = new Vector3(noiseReduction_compass, 0f, 0f);
-			Vector3 c = Vector3.Lerp(b, a, noiseReduction_compass_Response);
-			noiseReduction_compass = c.x;
-
-			//noiseReduction_compass = Mathf.Lerp(noiseReduction_compass, magneticHeading, noiseReduction_compass_Response);
+			noiseReduction_compass = Mathf.Lerp(noiseReduction_compass, magneticHeading, noiseReduction_compass_Response);
 			magneticHeading = noiseReduction_compass;
 
 		}
@@ -542,7 +536,7 @@ public class CamCrane : MonoBehaviour {
 			}
 			else{
 				initial_frame = false;
-				base_magneticHeading = turn.adj180(base_magneticHeading);
+				//base_magneticHeading = turn.adj180(base_magneticHeading);
 				noiseReduction_compass = base_magneticHeading;
 			}
 		}
