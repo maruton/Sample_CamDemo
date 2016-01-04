@@ -32,14 +32,23 @@ public class ValueRange : MonoBehaviour {
 	float limitPlus = 40f;		//!< Limit degree value for positive degree.
 	float limitMinus = -40f;	//!< Limit degree value for negative degree.
 
-	float resultValue = 0f;		//!< Result value. 
+	float resultValue = 0f;		//!< Result value(-180~0~180). 
 	public float ResultValue{
 		get{
 			resultValue = adj180(evaluateLimit(rangeValue + absAdjustValue)+offsetValue);
 			return(resultValue);
 		}
 	}
-	float offsetValue = 0f; //!< offset degree.
+
+	float resultValue360 = 0f;		//!< Result value(0~360). 
+	public float ResultValue360{
+		get{
+			resultValue360 = adj360(evaluateLimit(rangeValue + absAdjustValue)+offsetValue);
+			return(resultValue360);
+		}
+	}
+
+	float offsetValue = 0f; //!< offset degree(statical).
 	/*!
  *  @brief		Accessor for offsetValue
  * 	@attention	None
@@ -73,7 +82,7 @@ public class ValueRange : MonoBehaviour {
 		set{absAdjustValue = value - AbsAdjustOffsetValue;}
 		get{return(absAdjustValue);}
 	}
-	float rangeValue = 0;
+	float rangeValue = 0;//!<Dynamic offset.
 	public float RangeValue{
 		set{rangeValue = value;}
 		get{return(rangeValue);}
@@ -133,4 +142,18 @@ public class ValueRange : MonoBehaviour {
 		return(a);
 	}
 	*/
+	/*!
+ * 	@brief		Adjust range to value of degree 0 to 360 <br>
+ * 	@attention	None
+ * 	@note		None
+ * 	@author		Maruton.
+ */
+	public float adj360(float a){
+		while(a>360f) a-= 360f;
+		while(a<-360f) a+= 360f;
+		if(a<0f){
+			a = 180+(180+a);
+		}
+		return(a);
+	}
 }

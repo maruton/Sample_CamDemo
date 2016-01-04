@@ -169,10 +169,15 @@ public class CamCrane : MonoBehaviour {
 		
 	}
 	//--------------------
-	public bool EnableLeap_Turn = true;
+	bool EnableLeap_Turn = false;
 	void update_Turn(){
+		//turn.limitation = false;
+		//turn.SetResolution(2f);
+		//turn.Add();//(DEBUG)
+
 		turn.AbsAdjustValue = Detected_acceleration_DegX;
-		HorizontalOffsetRot = Quaternion.Euler(turn.ResultValue,0,0);
+		HorizontalOffsetRot = Quaternion.Euler(turn.ResultValue,0f,0f);
+
 		if(EnableLeap_Turn){
 			Update_TurnLeap();
 		}
@@ -180,6 +185,7 @@ public class CamCrane : MonoBehaviour {
 			HorizontalLeapResultRot = HorizontalBaseRot * HorizontalOffsetRot;
 		}
 		go_CamHorizontal.transform.localRotation = HorizontalLeapResultRot;
+		//Debug.Log ("turn.ResultValue: "+turn.ResultValue);
 	}
 	Quaternion HorizontalLeapSourceRot;
 	Quaternion HorizontalLeapTargetRot;
@@ -187,6 +193,7 @@ public class CamCrane : MonoBehaviour {
 	float Turn_LapTime = 0f;
 	float Turn_Time = 0f;
 	int Mode_TurnLeap = 0;
+	[System.NonSerialized]
 	public float Mag_TurnLeapDelta = 1.0f;// (0.01~1.0)  0.2=smooth & slow.0.4,0.6,1.0
 	void Update_TurnLeap(){
 		Mag_TurnLeapDelta = accelGui.ParamH;
@@ -227,7 +234,7 @@ public class CamCrane : MonoBehaviour {
 		}
 	}
 	//--------------------
-	public bool EnableLeap_Trim = true;
+	bool EnableLeap_Trim = false;
 
 	void update_Trim(){
 		trim.AbsAdjustValue = Detected_acceleration_DegY;
@@ -247,6 +254,7 @@ public class CamCrane : MonoBehaviour {
 	float Trim_LapTime = 0f;
 	float Trim_Time = 0f;
 	int Mode_TrimLeap = 0;
+	[System.NonSerialized]
 	public float Mag_TrimLeapDelta = 1.0f;// (0.01~1.0)  10.0f=smooth & slow.
 	void Update_TrimLeap(){
 		Mag_TrimLeapDelta = accelGui.ParamV;
@@ -303,7 +311,9 @@ public class CamCrane : MonoBehaviour {
 	float Last_magneticHeading = 0f;
 	bool Detected_acceleration_X = false;
 	bool Detected_acceleration_Y = false;
+	[System.NonSerialized]
 	public float Detected_acceleration_DegX = 0f;
+	[System.NonSerialized]
 	public float Detected_acceleration_DegY = 0f;
 	//public float AccelX = 0f;
 	//public float AccelY = 0f;
@@ -313,8 +323,11 @@ public class CamCrane : MonoBehaviour {
 	Vector3 noiseReduction_acceleration = new Vector3(0,0,0);
 	float noiseReduction_compass = 0f;
 
-	public bool JittterReductionA = false;//true;	//Noise reduction filter A for acceleration sensor
-	public bool JittterReductionB = true;//false;	//Noise reduction filter B for acceleration sensor
+	[System.NonSerialized]
+	public bool JitterReductionA = false;//true;	//Noise reduction filter A for acceleration sensor
+	[System.NonSerialized]
+	public bool JitterReductionB = true;//false;	//Noise reduction filter B for acceleration sensor
+	[System.NonSerialized]
 	public float SmoothFrame = 1.0f;//!< n/60 frame for lerp.
 	float compass_diff = 0f;
 	float magneticHeading = 0f;
@@ -327,8 +340,8 @@ public class CamCrane : MonoBehaviour {
    	 * 					後方上45度	y = -0.5 ※前方上45度と同じ		z = 0.5
    	 * 					水平下向き	y = 1.0							z = 0
    	 * 
-   	 * 	@attention		Slow&Smooth:  JittterReductionA=false, JittterReductionB=true
-   	 * 					Fast&Responce:JittterReductionA=true, JittterReductionB=false
+   	 * 	@attention		Slow&Smooth:  JitterReductionA=false, JitterReductionB=true
+   	 * 					Fast&Responce:JitterReductionA=true, JitterReductionB=false
    	 */	
 	void AccelerateOperation(){
 		//transform.rotation = Quaternion.Euler(0, -Input.compass.trueHeading, 0);
@@ -341,13 +354,13 @@ public class CamCrane : MonoBehaviour {
 			return;
 		}
 		//Begin: raw level noise reduction
-		if(JittterReductionB){
+		if(JitterReductionB){
+			//for accel sensor
 			float noiseReduction_acceleration_Response = SmoothFrame/60f;
 			noiseReduction_acceleration = Vector3.Lerp(noiseReduction_acceleration, acceleration, noiseReduction_acceleration_Response);
 			acceleration = noiseReduction_acceleration;
-
+			//for compass sensor
 			float noiseReduction_compass_Response = SmoothFrame/60f;
-
 			noiseReduction_compass = Mathf.Lerp(noiseReduction_compass, magneticHeading, noiseReduction_compass_Response);
 			magneticHeading = noiseReduction_compass;
 
@@ -360,7 +373,7 @@ public class CamCrane : MonoBehaviour {
 		bool accelEnableY = false;
 		bool accelEnableZ = false;
 		bool compassEnable = false;
-		if(JittterReductionA){
+		if(JitterReductionA){
 			//const float jitterNoise = 0.015f;
 			const float jitterNoise_Accel = 0.015f;	//!< Accel jitter(normalized 0~1.0)
 			const float jitterNoise_Compass = 1f;	//!< Compass jitter (degree)
@@ -529,6 +542,7 @@ public class CamCrane : MonoBehaviour {
 
 	void Update () {
 		Txt05.text = "base_magneticHeading: "+base_magneticHeading.ToString("F5");
+#if (!UNITY_EDITOR)
 		if(initial_frame){
 			base_magneticHeading = Input.compass.magneticHeading;
 			if(base_magneticHeading==0f){
@@ -543,17 +557,14 @@ public class CamCrane : MonoBehaviour {
 		Txt04.text = "base_magneticHeading: "+base_magneticHeading.ToString("F5");
 		Txt05.text = "magneticHeading: "+magneticHeading.ToString("F5");
 		Txt06.text = "compass_diff: "+compass_diff.ToString("F5");
-
+#endif
 
 		KeyOperation();
 		AccelerateOperation();
 
-
-
 		update_Turn();
 		update_Trim();
 		update_Zoom();
-
 
 		//Indicate status
 		string statusMessage = "";

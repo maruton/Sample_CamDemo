@@ -45,12 +45,12 @@ class uGUI_Accel: MonoBehaviour {
 	
 	}
 	void SetMode_Quick(){
-		cCamCrane.JittterReductionA = true;
-		cCamCrane.JittterReductionB = false;
+		cCamCrane.JitterReductionA = true;
+		cCamCrane.JitterReductionB = false;
 	}
 	void SetMode_Smooth(){
-		cCamCrane.JittterReductionA = false;
-		cCamCrane.JittterReductionB = true;
+		cCamCrane.JitterReductionA = false;
+		cCamCrane.JitterReductionB = true;
 	}
 	public void Button_Smooth60(){
 		SetMode_Smooth();
