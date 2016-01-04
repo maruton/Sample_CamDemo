@@ -53,15 +53,11 @@ class uGUI_Accel: MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 	}
+
 	void Update_Params(){
-		if(fps){
-			cCamCrane.SetFpsResolution(1f);
-			Button_fps.text = "fps60";
-		}
-		else{
-			cCamCrane.SetFpsResolution(2f);
-			Button_fps.text = "fps30";
-		}
+		Button_fps.text = fpsButtonName[fps];
+		cCamCrane.SetFpsResolution(fpsParam[fps]);
+
 		if(Limit){
 			Button_Limit.text = "limitOn";
 		}
@@ -71,9 +67,11 @@ class uGUI_Accel: MonoBehaviour {
 		cCamCrane.SetLimitation(Limit);
 	}
 
-	public bool fps = true;	//!< true:60  false:30
+	int fps = 0;	//!< 0:60fps  1:30fps  2:15fps
+	string[] fpsButtonName = new string[] { "fps60","fps30","fps15" };
+	float[] fpsParam = new float[] { 1f,2f,4 };
 	public void cb_Button_fps(){
-		fps = !fps;
+		fps = (fps+1)%3;
 		Update_Params();
 	}
 	public bool Limit = false;	//!< true:60  false:30
