@@ -61,61 +61,72 @@ public class CamCrane : MonoBehaviour {
 	ValueRange trim;// = new ValueRange();	//!< Control to range for trim.
 	ValueRange zoom;// = new ValueRange(); //!< Control to range for zoom.
 
-	CalcDiffDegree turnDiffDeg;
-	CalcDiffDegree trimDiffDeg;
+	//CalcDiffDegree turnDiffDeg;
+	//CalcDiffDegree trimDiffDeg;
 
 	uGUI_Accel accelGui;
 
-	Text Txt_AccelValue;
 	Text Txt_GyroDeg;
-
-
-	Text Txt01;
-	Text Txt02;
-	Text Txt03;
-	Text Txt04;
-	Text Txt05;
-	Text Txt06;
-	Text Txt07;
-	Text Txt08;
+	Text Txt_ValueAccel;
+	Text Txt_Value_magneticHeading_raw;
+	Text Txt_Value_trueHeading_raw;
+	Text Txt_Value_compassTrueDeg_raw;
+	Text Txt_Value_base_magneticHeading;
+	Text Txt_Value_magneticHeading;
+	Text Txt_Value_noiseReduction_compass;
 
 	Text Txt_Status;
-	string Message_Status = "";
+	//string Message_Status = "";
 
+
+	/*!	Limit enable/disable
+	 * 	Limit enable/disable
+   	 * 	@note		 	None
+   	 * 	@attention		None 
+   	 */	
+	public void SetLimitation(bool sw){
+		turn.limitation = sw;		//Limit range sw
+		trim.limitation = sw;		//Limit sw
+		zoom.limitation = sw;		//Limit range sw
+	}
+	/*!	Set resolution frame rate
+	 * 	Set resolution frame rate
+	 * 	@param[in]		n. (rate is 60/n)
+   	 * 	@note		 	None
+   	 * 	@attention		None 
+   	 */	
+	public void SetFpsResolution(float n){
+		NoiseReductionTake2Frame = n;
+	}
+	/*!	Set resolution frame rate
+	 * 	Set resolution frame rate
+	 * 	@param[in]		n. (rate is 60/n)
+   	 * 	@note		 	None
+   	 * 	@attention		None 
+   	 */	
+	public void SetHome_magneticHeading  (){
+		base_magneticHeading = Input.compass.magneticHeading;//Always 0.
+	}
+
+	//
 	/*!	Initial procedure.
 	 * 	Initial class for degree. 
    	 * 	@note		 	None
    	 * 	@attention		None 
    	 */	
 	void Init(){
+		GameObject go = GameObject.Find("Canvas/Text_ValueAccel");
 
-		GameObject go = GameObject.Find("Canvas/Text_AccelValue");
-		Txt_AccelValue = go.GetComponent<Text>();
-
-		go = GameObject.Find("Canvas/Text_GyroValue");
-		Txt_GyroDeg = go.GetComponent<Text>();
-
-
-
-		go = GameObject.Find("Canvas/Text_Status");
-		Txt_Status = go.GetComponent<Text>();
-
-		go = GameObject.Find("Canvas/Text01");
-		Txt01 = go.GetComponent<Text>();
-		go = GameObject.Find("Canvas/Text02");
-		Txt02 = go.GetComponent<Text>();
-		go = GameObject.Find("Canvas/Text03");
-		Txt03 = go.GetComponent<Text>();
-		go = GameObject.Find("Canvas/Text04");
-		Txt04 = go.GetComponent<Text>();
-		go = GameObject.Find("Canvas/Text05");
-		Txt05 = go.GetComponent<Text>();
-		go = GameObject.Find("Canvas/Text06");
-		Txt06 = go.GetComponent<Text>();
-		go = GameObject.Find("Canvas/Text07");
-		Txt07 = go.GetComponent<Text>();
-		go = GameObject.Find("Canvas/Text08");
-		Txt08 = go.GetComponent<Text>();
+		Txt_GyroDeg = GameObject.Find("Canvas/Text_ValueGyro").GetComponent<Text>();
+		Txt_ValueAccel = GameObject.Find("Canvas/Text_ValueAccel").GetComponent<Text>();
+		Txt_Value_magneticHeading_raw = GameObject.Find("Canvas/Text_Value_magneticHeading_raw").GetComponent<Text>();
+		Txt_Value_trueHeading_raw = GameObject.Find("Canvas/Text_Value_trueHeading_raw").GetComponent<Text>();
+		Txt_Value_compassTrueDeg_raw = GameObject.Find("Canvas/Text_Value_compassTrueDeg_raw").GetComponent<Text>();
+		Txt_Value_base_magneticHeading = GameObject.Find("Canvas/Text_Value_base_magneticHeading").GetComponent<Text>();
+		Txt_Value_magneticHeading = GameObject.Find("Canvas/Text_Value_magneticHeading").GetComponent<Text>();
+		Txt_Value_noiseReduction_compass = GameObject.Find("Canvas/Text_Value_noiseReduction_compass").GetComponent<Text>();
+				
+		Txt_Status = GameObject.Find("Canvas/Text_Status").GetComponent<Text>();
 
 
 		accelGui = GetComponent<uGUI_Accel>();
@@ -128,8 +139,8 @@ public class CamCrane : MonoBehaviour {
 		trim = gameObject.AddComponent<ValueRange>();
 		zoom = gameObject.AddComponent<ValueRange>();
 
-		trimDiffDeg = go_CamVertical.AddComponent<CalcDiffDegree>();
-		turnDiffDeg = go_CamHorizontal.AddComponent<CalcDiffDegree>();
+		//trimDiffDeg = go_CamVertical.AddComponent<CalcDiffDegree>();
+		//turnDiffDeg = go_CamHorizontal.AddComponent<CalcDiffDegree>();
 
 		turn.RangeValue = 0f;
 		turn.SetResolution(2f);		//Moving step
@@ -147,15 +158,6 @@ public class CamCrane : MonoBehaviour {
 		zoom.SetResolution(0.05f);	//Moving step
 		zoom.SetRange(1.6f, 5f);	//Zoom up, Zoom down
 		zoom.limitation = true;		//Limit range sw
-
-		HorizontalLeapSourceRot = HorizontalBaseRot;
-		HorizontalLeapTargetRot = HorizontalBaseRot;
-		HorizontalLeapResultRot = HorizontalBaseRot;
-
-		VerticalLeapSourceRot = VerticalBaseRot;
-		VerticalLeapTargetRot = VerticalBaseRot;
-		VerticalLeapResultRot = VerticalBaseRot;
-
 	}
 	//--------------------
 	Quaternion HorizontalBaseRot = Quaternion.Euler(0,0,90);//!< Model offset for model.
@@ -166,171 +168,36 @@ public class CamCrane : MonoBehaviour {
 	void update_Zoom(){
 		//Debug.Log (zoom.RangeValue);
 		go_CamZoom.transform.localPosition = new Vector3(0,0,zoom.RangeValue + AccelZoom);
-		
 	}
 	//--------------------
-	bool EnableLeap_Turn = false;
-	void update_Turn(){
-		//turn.limitation = false;
-		//turn.SetResolution(2f);
-		//turn.Add();//(DEBUG)
-
-		turn.AbsAdjustValue = Detected_acceleration_DegX;
-		HorizontalOffsetRot = Quaternion.Euler(turn.ResultValue,0f,0f);
-
-		if(EnableLeap_Turn){
-			Update_TurnLeap();
-		}
-		else{
-			HorizontalLeapResultRot = HorizontalBaseRot * HorizontalOffsetRot;
-		}
-		go_CamHorizontal.transform.localRotation = HorizontalLeapResultRot;
-		//Debug.Log ("turn.ResultValue: "+turn.ResultValue);
-	}
-	Quaternion HorizontalLeapSourceRot;
-	Quaternion HorizontalLeapTargetRot;
-	Quaternion HorizontalLeapResultRot;
-	float Turn_LapTime = 0f;
-	float Turn_Time = 0f;
-	int Mode_TurnLeap = 0;
-	[System.NonSerialized]
-	public float Mag_TurnLeapDelta = 1.0f;// (0.01~1.0)  0.2=smooth & slow.0.4,0.6,1.0
-	void Update_TurnLeap(){
-		Mag_TurnLeapDelta = accelGui.ParamH;
-		if(Detected_acceleration_X){
-			Detected_acceleration_X = false;
-			Quaternion currentRot = go_CamHorizontal.transform.localRotation;//Check Local?Global?
-			//Debug.Log ("currentRot = "+currentRot.ToString("F5"));
-			HorizontalLeapTargetRot = HorizontalBaseRot * HorizontalOffsetRot;
-			HorizontalLeapSourceRot = currentRot;
-			Turn_Time = (Quaternion.Angle(HorizontalLeapTargetRot , HorizontalLeapSourceRot))/180.0f;
-			Turn_LapTime = 0f;
-			Mode_TurnLeap = 1;
-			/*Debug.Log ("0 : HorizontalLeapTargetRot="+HorizontalLeapTargetRot.ToString("F5")+
-			           "HorizontalLeapSourceRot="+HorizontalLeapSourceRot.ToString("F5")+
-			           "  ("+Turn_LapTime.ToString("F5")+"/"+Turn_Time.ToString("F5")+")  "
-			           );*/
-		}
-		if(Mode_TurnLeap==1){
-			float t = (Time.deltaTime * Mag_TurnLeapDelta);
-			if(t==0.0f) t = 0.005f;//Safe code.
-			Turn_LapTime += t;
-			if(Turn_LapTime<Turn_Time){//Leap moving.
-				HorizontalLeapResultRot = Quaternion.Lerp(HorizontalLeapSourceRot, HorizontalLeapTargetRot, Turn_LapTime/Turn_Time);
-				/*Debug.Log ("1a: HorizontalLeapTargetRot="+HorizontalLeapTargetRot.ToString("F5")+
-				           "HorizontalLeapSourceRot="+HorizontalLeapSourceRot.ToString("F5")+
-				           "  ("+Turn_LapTime.ToString("F5")+"/"+Turn_Time.ToString("F5")+")  "
-				           );*/
-			}
-			else{//Leap move end.
-				HorizontalLeapResultRot = HorizontalLeapTargetRot;
-				Turn_LapTime = 0f;
-				/*Debug.Log ("0e: HorizontalLeapTargetRot="+HorizontalLeapTargetRot.ToString("F5")+
-				           "HorizontalLeapSourceRot="+HorizontalLeapSourceRot.ToString("F5")+
-				           "  ("+Turn_LapTime.ToString("F5")+"/"+Turn_Time.ToString("F5")+")  "
-				           );*/
-				Mode_TurnLeap = 0;
-			}
-		}
+	//float Detected_acceleration_DegX = 0f;
+	void update_Turn(float turnValue){
+		//turn.AbsAdjustValue = Detected_acceleration_DegX;
+		HorizontalOffsetRot = Quaternion.Euler(turnValue,0f,0f);
+		go_CamHorizontal.transform.localRotation = HorizontalBaseRot * HorizontalOffsetRot;;
 	}
 	//--------------------
-	bool EnableLeap_Trim = false;
-
-	void update_Trim(){
-		trim.AbsAdjustValue = Detected_acceleration_DegY;
+	void update_Trim(float trimValue){
+		//trim.AbsAdjustValue = Detected_acceleration_DegY;
 		//Debug.Log ("trim.ResultValue:"+trim.ResultValue);
-		VerticalOffsetRot = Quaternion.Euler(0,trim.ResultValue,0);
-		if(EnableLeap_Trim){
-			Update_TrimLeap();
-		}
-		else{
-			VerticalLeapResultRot = VerticalBaseRot * VerticalOffsetRot;
-		}
-		go_CamVertical.transform.localRotation = VerticalLeapResultRot;
-	}
-	Quaternion VerticalLeapSourceRot;
-	Quaternion VerticalLeapTargetRot;
-	Quaternion VerticalLeapResultRot;
-	float Trim_LapTime = 0f;
-	float Trim_Time = 0f;
-	int Mode_TrimLeap = 0;
-	[System.NonSerialized]
-	public float Mag_TrimLeapDelta = 1.0f;// (0.01~1.0)  10.0f=smooth & slow.
-	void Update_TrimLeap(){
-		Mag_TrimLeapDelta = accelGui.ParamV;
-		switch(Mode_TrimLeap){
-		case 0://Leap start
-			if(Detected_acceleration_Y){
-				Detected_acceleration_Y = false;
-				Quaternion currentRot = go_CamVertical.transform.localRotation;
-				//Debug.Log ("currentRot = "+currentRot.ToString("F5"));
-				VerticalLeapTargetRot = VerticalBaseRot * VerticalOffsetRot;
-				VerticalLeapSourceRot = currentRot;
-				Trim_Time = (Quaternion.Angle(VerticalLeapTargetRot , VerticalLeapSourceRot))/180.0f;
-				Trim_LapTime = 0f;
-				Mode_TrimLeap = 1;
-				/*Debug.Log ("0 : VerticalLeapTargetRot="+VerticalLeapTargetRot.ToString("F5")+
-				           "VerticalLeapSourceRot="+VerticalLeapSourceRot.ToString("F5")+
-				           "  ("+Trim_LapTime.ToString("F5")+"/"+Trim_Time.ToString("F5")+")  "
-				           );*/
-			}
-			break;
-		case 1://<Leap moving
-			//float t = Time.deltaTime;
-			float t = (Time.deltaTime * Mag_TrimLeapDelta);
-			if(t==0.0f) t = 0.005f;//Safe code.
-			Trim_LapTime += t;
-			if(Trim_LapTime<Trim_Time){//Leap moving.
-				VerticalLeapResultRot = Quaternion.Lerp(VerticalLeapSourceRot, VerticalLeapTargetRot, Trim_LapTime/Trim_Time);
-				/*Debug.Log ("1a: VerticalLeapTargetRot="+VerticalLeapTargetRot.ToString("F5")+
-				           "VerticalLeapSourceRot="+VerticalLeapSourceRot.ToString("F5")+
-				           "  ("+Trim_LapTime.ToString("F5")+"/"+Trim_Time.ToString("F5")+")  "
-				           );*/
-			}
-			else{//Leap move end.
-				VerticalLeapResultRot = VerticalLeapTargetRot;
-				Trim_LapTime = 0f;
-				/*Debug.Log ("0e: VerticalLeapTargetRot="+VerticalLeapTargetRot.ToString("F5")+
-				           "VerticalLeapSourceRot="+VerticalLeapSourceRot.ToString("F5")+
-				           "  ("+Trim_LapTime.ToString("F5")+"/"+Trim_Time.ToString("F5")+")  "
-				           );*/
-				Mode_TrimLeap = 0;
-			}
-			break;
-
-		default:
-			break;
-		}
+		VerticalOffsetRot = Quaternion.Euler(0,trimValue,0);
+		go_CamVertical.transform.localRotation = VerticalBaseRot * VerticalOffsetRot;
 	}
 	//--------------------
-	const float Mag_AccelX = 90f;	const float Mag_AccelY = 90f;
 	float AccelZoom = 0;
-	const float Mag_AccelZoom = 1f;
 
-	Vector3 Last_acceleration = new Vector3(0,0,0);
-	float Last_magneticHeading = 0f;
-	bool Detected_acceleration_X = false;
-	bool Detected_acceleration_Y = false;
-	[System.NonSerialized]
-	public float Detected_acceleration_DegX = 0f;
 	[System.NonSerialized]
 	public float Detected_acceleration_DegY = 0f;
 	//public float AccelX = 0f;
 	//public float AccelY = 0f;
 
-	bool EnableAccelSensor = true;//!< Enable accel sensor
-	bool EnableAccelSensor_DetectDiffrencial = true;//!< Enable accel sensor motion detect.
-	Vector3 noiseReduction_acceleration = new Vector3(0,0,0);
-	float noiseReduction_compass = 0f;
+	bool EnableSensor = true;//!< Enable accel sensor
 
 	[System.NonSerialized]
-	public bool JitterReductionA = false;//true;	//Noise reduction filter A for acceleration sensor
-	[System.NonSerialized]
-	public bool JitterReductionB = true;//false;	//Noise reduction filter B for acceleration sensor
-	[System.NonSerialized]
-	public float SmoothFrame = 1.0f;//!< n/60 frame for lerp.
-	float compass_diff = 0f;
-	float magneticHeading = 0f;
+	public float NoiseReductionTake2Frame = 1.0f;//!< n/60(or30) frame for lerp.
+	Vector3 noiseReduction_acceleration = new Vector3(0,0,0); 	//!< Last value acceleration sensor for noise reduction.
+	float noiseReduction_compass = 0f;							//!< Last value compass sensor for noise reduction.
+	float magneticHeading = 0f;									//!< 
 	/*!	Accelerate operation.
 	 *	Accelerate operation.
    	 * 	@note		 	LCD面が、
@@ -340,147 +207,65 @@ public class CamCrane : MonoBehaviour {
    	 * 					後方上45度	y = -0.5 ※前方上45度と同じ		z = 0.5
    	 * 					水平下向き	y = 1.0							z = 0
    	 * 
-   	 * 	@attention		Slow&Smooth:  JitterReductionA=false, JitterReductionB=true
-   	 * 					Fast&Responce:JitterReductionA=true, JitterReductionB=false
+   	 * 	@attention		None
    	 */	
-	void AccelerateOperation(){
+	Vector3 SensorOperation(){
+		float qx, qy;
 		//transform.rotation = Quaternion.Euler(0, -Input.compass.trueHeading, 0);
-		Vector3 acceleration = Input.acceleration;
-		magneticHeading = Input.compass.magneticHeading;
+		Vector3 acceleration = Input.acceleration;	//Accel sensor
+		magneticHeading = Input.compass.magneticHeading;//compass sensor (0~360)
+		Txt_Value_magneticHeading.text = magneticHeading.ToString("F5");
 
-		if(!EnableAccelSensor){
-			acceleration = Vector3.zero;
-			Detected_acceleration_DegX = Detected_acceleration_DegY = 0f;
-			return;
+		if(!EnableSensor){
+			return( new Vector3(0,0,0) );
 		}
-		//Begin: raw level noise reduction
-		if(JitterReductionB){
-			//for accel sensor
-			float noiseReduction_acceleration_Response = SmoothFrame/60f;
-			noiseReduction_acceleration = Vector3.Lerp(noiseReduction_acceleration, acceleration, noiseReduction_acceleration_Response);
-			acceleration = noiseReduction_acceleration;
-			//for compass sensor
-			float noiseReduction_compass_Response = SmoothFrame/60f;
-			noiseReduction_compass = Mathf.Lerp(noiseReduction_compass, magneticHeading, noiseReduction_compass_Response);
-			magneticHeading = noiseReduction_compass;
-
-		}
-		//End: raw level noise reduction
-
-
-		float diff = 0f;
-		bool accelEnableX = false;
-		bool accelEnableY = false;
-		bool accelEnableZ = false;
-		bool compassEnable = false;
-		if(JitterReductionA){
-			//const float jitterNoise = 0.015f;
-			const float jitterNoise_Accel = 0.015f;	//!< Accel jitter(normalized 0~1.0)
-			const float jitterNoise_Compass = 1f;	//!< Compass jitter (degree)
-			if(EnableAccelSensor_DetectDiffrencial){
-				if(!accelEnableX){
-					diff = Last_acceleration.x - acceleration.x;
-					if(Mathf.Abs(diff)>jitterNoise_Accel){
-						accelEnableX = true;
-						Last_acceleration.x = acceleration.x;
-					}
-				}
-				if(!accelEnableY){
-					diff = Last_acceleration.y - acceleration.y;
-					if(Mathf.Abs(diff)>jitterNoise_Accel){
-						accelEnableY = true;
-						Last_acceleration.y = acceleration.y;
-					}
-				}
-				if(!accelEnableZ){
-					diff = Last_acceleration.z - acceleration.z;
-					if(Mathf.Abs(diff)>jitterNoise_Accel){
-						accelEnableZ = true;
-						Last_acceleration.z = acceleration.z;
-					}
-				}
-				if(!compassEnable){
-					diff = Last_magneticHeading - magneticHeading;
-					if(Mathf.Abs(diff)>jitterNoise_Compass){
-						compassEnable = true;
-						Last_magneticHeading = magneticHeading;
-					}
-				}
-			}
-		}
-		else{
-			accelEnableX = true;
-			accelEnableY = true;
-			accelEnableZ = true;
-			compassEnable = true;
-		}
-		turn.limitation = false; //Limit range sw (DEBUG)
-		trim.limitation = false; //Limit sw(DEBUG)
-		//Make new degree by acceleration
-
-		/*
-		//Begin: Use acceleration sensor
-		if(accelEnableX){
-			Detected_acceleration_DegX = acceleration.x * Mag_AccelX; //Direction Turn
-			Last_acceleration.x = acceleration.x;
-			Detected_acceleration_X = true;
-			Txt07.text = "Detected_acceleration_DegX"+Detected_acceleration_DegX.ToString("F5");
-		}
-		//End: Use acceleration sensor
-		*/
-		//Begin: Use Compass sensor
-		if(compassEnable){
-			compass_diff = turn.adj180(magneticHeading - base_magneticHeading);
-			//Detected_acceleration_DegX = compass_diff * Mag_AccelX / 180f; //Direction Turn
-			Detected_acceleration_DegX = compass_diff; //Direction Turn
-			Detected_acceleration_X = true;
-		}
-		//End: Use Compass sensor
-
-		if(accelEnableZ && accelEnableY){
-			float q = acceleration.z;
-			if(acceleration.y>0){
-				if(acceleration.z>0){
-					q = 1.0f + acceleration.y;//0~2.0, (90deg/1.0)
-				}
-				else{
-					q = -1.0f - acceleration.y;
-				}
-			}
-			Detected_acceleration_DegY = q * -Mag_AccelY; //Direction Trim
-			Detected_acceleration_Y = true;
-			//Txt08.text = "Detected_acceleration_DegY"+Detected_acceleration_DegY.ToString("F5");
-		}
-		/*
-		if(accelEnableY){
-			float y = acceleration.y;
+		//Begin: raw level noise reduction for accel sensor
+		noiseReduction_acceleration = Vector3.Lerp(noiseReduction_acceleration, acceleration, (NoiseReductionTake2Frame/60f) );//need arithmetic degree(-180~0~180)
+		acceleration = noiseReduction_acceleration;
+		//End: raw level noise reduction for accel sensor
+		//Begin: Accel sensor
+		float q = acceleration.z;
+		if(acceleration.y>0){
 			if(acceleration.z>0){
-				if(acceleration.y<0) y -= acceleration.z;
-				else y += acceleration.z;
+				q = 1.0f + acceleration.y;//0~2.0, (90deg/1.0)
 			}
-			Detected_acceleration_DegY = y * -Mag_AccelY; //Direction Trim
-			Last_acceleration.y = acceleration.y;
-			Detected_acceleration_Y = true;
-			Txt08.text = "Detected_acceleration_DegY"+Detected_acceleration_DegY.ToString("F5");
+			else{
+				q = -1.0f - acceleration.y;
+			}
 		}
-		*/
+		const float Mag_AccelY = 90f;
+		qy = q * -Mag_AccelY; //Direction Trim
+		//End: Accel sensor
+
+
+		//Begin: raw level noise reduction for compass sensor
+		//magneticHeading = turn.adj180(magneticHeading);
+		//noiseReduction_compass = Mathf.Lerp(noiseReduction_compass, magneticHeading, (NoiseReductionTake2Frame/60f));//
+		//Lerpで -180 から 180 への飛び値用。 
+		noiseReduction_compass = Mathf.LerpAngle(noiseReduction_compass, magneticHeading, (NoiseReductionTake2Frame/60f));//
+		magneticHeading = noiseReduction_compass;
+		Txt_Value_noiseReduction_compass.text = noiseReduction_compass.ToString("F5");
+		//End: raw level noise reduction for compass sensor
+
+		//Begin: Compass sensor
+		qx = turn.adj180(magneticHeading - base_magneticHeading);; //Direction Turn ココも後で元に戻して確認（回り現象） 
+		//qx = turn.adj180(magneticHeading); //Direction Turn (DEBUG)
+		//Debug.Log ("qx: "+qx);
+		//End: Compass sensor
+
+		return( new Vector3(qx,qy,0) );
 	}
 
 	void test(){
-		Txt_AccelValue.text = Input.acceleration.ToString("F5");
-
+		Txt_ValueAccel.text = Input.acceleration.ToString("F5");
 		//The heading in degrees relative to the magnetic North Pole. (Read Only) ※北からの相対角度（平面上） 
-		Txt01.text = "compass.magneticHeading: "+Input.compass.magneticHeading.ToString("F5");
-
+		Txt_Value_magneticHeading_raw.text = Input.compass.magneticHeading.ToString("F5");
 		//The heading in degrees relative to the geographic North Pole. (Read Only)  ※北からの相対角度（平面上） 
 		//Must have location services enabled (using GPS?)
-		Txt02.text = "compass.trueHeading: "+Input.compass.trueHeading.ToString("F5");
-
-
+		Txt_Value_trueHeading_raw.text = Input.compass.trueHeading.ToString("F5");
 		Quaternion compasRot = Quaternion.Euler(0, -Input.compass.trueHeading, 0);
 		Vector3 compassDeg = compasRot.eulerAngles;
-		Txt03.text = "compassTrueDeg: "+compassDeg.ToString("F5");
-
+		Txt_Value_compassTrueDeg_raw.text = compassDeg.ToString("F5");
 
 
 
@@ -511,7 +296,7 @@ public class CamCrane : MonoBehaviour {
 	}
 
 	bool initial_frame = true;
-	float base_magneticHeading = 0f;// Front relative degree from north pole.
+	float base_magneticHeading = 0f;// Front relative +degree from north pole.
 
 
 
@@ -523,7 +308,8 @@ public class CamCrane : MonoBehaviour {
 		Input.location.Start();
 		Input.compass.enabled = true; //Enable compass sensor
 		Input.location.Start();
-		base_magneticHeading = Input.compass.magneticHeading;//Always 0.
+		SetHome_magneticHeading();
+		//base_magneticHeading = Input.compass.magneticHeading;//Always 0.
 		if(SystemInfo.supportsGyroscope){//Check&Enable Gyro sensor
 			Input.gyro.enabled = true;
 		}
@@ -541,8 +327,7 @@ public class CamCrane : MonoBehaviour {
 	}
 
 	void Update () {
-		Txt05.text = "base_magneticHeading: "+base_magneticHeading.ToString("F5");
-#if (!UNITY_EDITOR)
+		#if (!UNITY_EDITOR)
 		if(initial_frame){
 			base_magneticHeading = Input.compass.magneticHeading;
 			if(base_magneticHeading==0f){
@@ -554,17 +339,19 @@ public class CamCrane : MonoBehaviour {
 				noiseReduction_compass = base_magneticHeading;
 			}
 		}
-		Txt04.text = "base_magneticHeading: "+base_magneticHeading.ToString("F5");
-		Txt05.text = "magneticHeading: "+magneticHeading.ToString("F5");
-		Txt06.text = "compass_diff: "+compass_diff.ToString("F5");
-#endif
+		#endif
+		Txt_Value_base_magneticHeading.text = base_magneticHeading.ToString("F5");
 
 		KeyOperation();
-		AccelerateOperation();
 
-		update_Turn();
-		update_Trim();
+		Vector3 sensor = SensorOperation();
+		turn.AbsAdjustValue = sensor.x;
+		trim.AbsAdjustValue = sensor.y;
+
+		update_Turn(turn.ResultValue);
+		update_Trim(trim.ResultValue);
 		update_Zoom();
+
 
 		//Indicate status
 		string statusMessage = "";
