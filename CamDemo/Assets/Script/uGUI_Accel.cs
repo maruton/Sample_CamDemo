@@ -35,73 +35,53 @@ class uGUI_Accel: MonoBehaviour {
 		*/
 	}
 
+	Text Button_Limit;
+	Text Button_fps;
 	CamCrane cCamCrane;
 	void Start () {
 		cCamCrane = gameObject.GetComponent<CamCrane>();
+		Button_Limit = (GameObject.Find("Canvas/Button_Limit").GetComponent<Button>()).GetComponent<Text>();
+		Button_fps = (GameObject.Find("Canvas/Button_Limit").GetComponent<Button>()).GetComponent<Text>();;
+
+		Button_Limit = GameObject.Find("Canvas/Button_Limit/Text").GetComponent<Text>();
+		Button_fps = GameObject.Find("Canvas/Button_fps/Text").GetComponent<Text>();
+
+
+		Update_Params();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-	
 	}
-	void SetMode_Quick(){
-		cCamCrane.JitterReductionA = true;
-		cCamCrane.JitterReductionB = false;
-	}
-	void SetMode_Smooth(){
-		cCamCrane.JitterReductionA = false;
-		cCamCrane.JitterReductionB = true;
-	}
-	public void Button_Smooth60(){
-		SetMode_Smooth();
-		cCamCrane.SmoothFrame = 1f;
-	}
-	public void Button_Smooth30(){
-		SetMode_Smooth();
-		cCamCrane.SmoothFrame = 2f;
+	void Update_Params(){
+		if(fps){
+			cCamCrane.SetFpsResolution(1f);
+			Button_fps.text = "fps60";
+		}
+		else{
+			cCamCrane.SetFpsResolution(2f);
+			Button_fps.text = "fps30";
+		}
+		if(Limit){
+			Button_Limit.text = "limitOn";
+		}
+		else{
+			Button_Limit.text = "limitOff";
+		}
+		cCamCrane.SetLimitation(Limit);
 	}
 
-	public float ParamV = 1.0f;
-	public float ParamH = 1.0f;
-
-	public void Button_v2(){
-		SetMode_Quick();
-		ParamV = 0.2f;
+	public bool fps = true;	//!< true:60  false:30
+	public void cb_Button_fps(){
+		fps = !fps;
+		Update_Params();
 	}
-	public void Button_v4(){
-		SetMode_Quick();
-		ParamV = 0.4f;
+	public bool Limit = false;	//!< true:60  false:30
+	public void cb_Button_Limit(){
+		Limit = !Limit;
+		Update_Params();
 	}
-	public void Button_v6(){
-		SetMode_Quick();
-		ParamV = 0.6f;
-	}
-	public void Button_v8(){
-		SetMode_Quick();
-		ParamV = 0.8f;
-	}
-	public void Button_v10(){
-		SetMode_Quick();
-		ParamV = 1.0f;
-	}
-	public void Button_h2(){
-		SetMode_Quick();
-		ParamH = 0.2f;
-	}
-	public void Button_h4(){
-		SetMode_Quick();
-		ParamH = 0.4f;
-	}
-	public void Button_h6(){
-		SetMode_Quick();
-		ParamH = 0.6f;
-	}
-	public void Button_h8(){
-		SetMode_Quick();
-		ParamH = 0.8f;
-	}
-	public void Button_h10(){
-		SetMode_Quick();
-		ParamH = 1.0f;
+	public void cb_Home(){
+		cCamCrane.SetHome_magneticHeading();
 	}
 }
